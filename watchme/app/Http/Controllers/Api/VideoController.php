@@ -127,18 +127,13 @@ class VideoController extends BaseController
     /**
      * Stream the specified resource.
      *
-     * @param  string $hashId
-     * @param  int    $quality
+     * @param  Video $video
+     * @param  int   $quality
      *
      * @return StreamedResponse|JsonResponse
      */
-    public function stream(string $hashId, int $quality): StreamedResponse|JsonResponse
+    public function stream(Video $video, int $quality): StreamedResponse|JsonResponse
     {
-        $video = $this->repository->findByHashId($hashId);
-        if (is_null($video)) {
-            return $this->sendError('Video not found');
-        }
-
         $video->load('sources');
         $source = $video->sources->first(fn($source) => $source->type === $quality);
 
@@ -152,5 +147,41 @@ class VideoController extends BaseController
         }
 
         return $this->sendError('Video does not exists');
+    }
+
+    /**
+     * Show the specified video thumbnail image.
+     *
+     * @param  Video $video
+     *
+     * @return JsonResponse|\Illuminate\Http\Response|mixed
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    public function thumbnail(Video $video)
+    {
+        $thumbnail = $video->thumbnail;
+
+        if (!$video->exists || !Storage::exists($thumbnail)) {
+            return $this->sendError('Video does not exists');
+        }
+
+        $file = Storage::get($thumbnail);
+        $type = Storage::mimeType($thumbnail);
+
+        return response()->make($file, 200)->header('Content-Type', $type);
+    }
+
+    public function preview(Video $video)
+    {
+        $preview = $video->preview;
+
+        if (!$video->exists || !Storage::exists($preview)) {
+            return $this->sendError('Video does not exists');
+        }
+
+        $file = Storage::get($preview);
+        $type = Storage::mimeType($preview);
+
+        return response()->make($file, 200)->header('Content-Type', $type);
     }
 }

@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Video;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -11,7 +10,7 @@ class VideoTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private Model $video;
+    private Video $video;
 
     public function setUp(): void
     {
