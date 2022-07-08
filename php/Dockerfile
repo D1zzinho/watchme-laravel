@@ -3,7 +3,7 @@ FROM php:8.1.6-fpm
 WORKDIR /home/watchme
 
 RUN apt-get update
-RUN apt-get install -y nano mc && apt-get install -y nodejs npm
+RUN apt-get install -y nano mc ffmpeg && apt-get install -y nodejs npm
 RUN apt-get -y dist-upgrade
 RUN npm install
 

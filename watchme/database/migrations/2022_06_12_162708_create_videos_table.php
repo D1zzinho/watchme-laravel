@@ -34,10 +34,9 @@ return new class extends Migration
             $table->unsignedSmallInteger('width')->nullable();
             $table->unsignedSmallInteger('height');
             $table->unsignedMediumInteger('duration')->nullable();
+            $table->datetime('converted_for_downloading_at')->nullable();
+            $table->datetime('converted_for_streaming_at')->nullable();
             $table->timestamps();
-
-            $table->index('title');
-            $table->index('description');
         });
     }
 

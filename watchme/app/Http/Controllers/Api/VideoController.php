@@ -8,9 +8,9 @@ use App\Http\Requests\UpdateVideoRequest;
 use App\Http\Resources\VideoResource;
 use App\Models\Video;
 use App\Repositories\VideoRepositoryInterface;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -37,6 +37,18 @@ class VideoController extends BaseController
     }
 
     /**
+     * @param  Request $request
+     *
+     * @return JsonResponse
+     */
+    public function latest(Request $request): JsonResponse
+    {
+        $videos = $this->repository->findLatest($request);
+
+        return $this->sendResponse(VideoResource::collection($videos), 'Videos retrieved successfully.');
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
@@ -49,17 +61,13 @@ class VideoController extends BaseController
     /**
      * Store a newly created resource in storage.
      *
-     * @param \App\Http\Requests\StoreVideoRequest $request
+     * @param  StoreVideoRequest $request
      *
      * @return JsonResponse
      */
     public function store(StoreVideoRequest $request): JsonResponse
     {
-        $user = Auth::user();
-
-        $validated = $request->validated();
-
-        $video = $user->videos()->create($validated);
+        $video = $this->repository->store($request);
 
         return $this->sendResponse(new VideoResource($video), 'Video successfully stored in database.')
             ->setStatusCode(Response::HTTP_CREATED);
@@ -68,13 +76,13 @@ class VideoController extends BaseController
     /**
      * Display the specified resource.
      *
-     * @param Video $video
+     * @param  Video $video
      *
      * @return JsonResponse
      */
     public function show(Video $video): JsonResponse
     {
-        $video->load('status', 'user', 'sources');
+        $video->load('status', 'user', 'sources', 'tags');
 
         return $this->sendResponse(new VideoResource($video), 'Video retrieved successfully.');
     }
@@ -82,7 +90,7 @@ class VideoController extends BaseController
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Video $video
+     * @param  Video $video
      *
      * @return \Illuminate\Http\Response
      */
@@ -94,8 +102,8 @@ class VideoController extends BaseController
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateVideoRequest $request
-     * @param  Video                                 $video
+     * @param  UpdateVideoRequest $request
+     * @param  Video              $video
      *
      * @return JsonResponse
      */
@@ -125,6 +133,18 @@ class VideoController extends BaseController
     }
 
     /**
+     * @param  Request $request
+     *
+     * @return JsonResponse
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $videos = $this->repository->search($request);
+
+        return $this->sendResponse($videos, "Found {$videos->total()} videos.");
+    }
+
+    /**
      * Stream the specified resource.
      *
      * @param  Video $video
@@ -135,9 +155,9 @@ class VideoController extends BaseController
     public function stream(Video $video, int $quality): StreamedResponse|JsonResponse
     {
         $video->load('sources');
-        $source = $video->sources->first(fn($source) => $source->type === $quality);
+        $source = $video->sources?->first(fn($source) => $source->type === $quality);
 
-        if (Storage::exists($source->pivot->source_path)) {
+        if ($source && Storage::exists($source->pivot->source_path)) {
             $stream = new VideoStream($source->pivot->source_path);
             return response()->stream(
                 function () use ($stream) {
@@ -154,8 +174,8 @@ class VideoController extends BaseController
      *
      * @param  Video $video
      *
-     * @return JsonResponse|\Illuminate\Http\Response|mixed
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @return JsonResponse|\Illuminate\Http\Response
+     * @throws BindingResolutionException
      */
     public function thumbnail(Video $video)
     {
@@ -165,12 +185,15 @@ class VideoController extends BaseController
             return $this->sendError('Video does not exists');
         }
 
-        $file = Storage::get($thumbnail);
-        $type = Storage::mimeType($thumbnail);
-
-        return response()->make($file, 200)->header('Content-Type', $type);
+        return $this->readMaterial($thumbnail);
     }
 
+    /**
+     * @param  Video $video
+     *
+     * @return JsonResponse|\Illuminate\Http\Response
+     * @throws BindingResolutionException
+     */
     public function preview(Video $video)
     {
         $preview = $video->preview;
@@ -179,8 +202,19 @@ class VideoController extends BaseController
             return $this->sendError('Video does not exists');
         }
 
-        $file = Storage::get($preview);
-        $type = Storage::mimeType($preview);
+        return $this->readMaterial($preview);
+    }
+
+    /**
+     * @param  string $filepath
+     *
+     * @return \Illuminate\Http\Response
+     * @throws BindingResolutionException
+     */
+    private function readMaterial(string $filepath): \Illuminate\Http\Response
+    {
+        $file = Storage::get($filepath);
+        $type = Storage::mimeType($filepath);
 
         return response()->make($file, 200)->header('Content-Type', $type);
     }

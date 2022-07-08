@@ -31,7 +31,8 @@ class StoreVideoRequest extends FormRequest
             'preview'     => 'required|string|max:255',
             'width'       => 'nullable|integer',
             'height'      => 'required|integer',
-            'duration'    => 'nullable|integer'
+            'duration'    => 'nullable|integer',
+            'file'        => 'required|file|mimetypes:video/avi,video/mpeg,video/quicktime,video/mp4,video/ogg,video/webm,video/x-flv'
         ];
     }
 }

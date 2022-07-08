@@ -20,6 +20,16 @@ services:
     networks:
       - postgres
 
+  meilisearch:
+    restart: unless-stopped
+    image: getmeili/meilisearch:latest
+    volumes:
+      - /var/local/meilisearch:/data.ms
+    ports:
+      - "7700:7700"
+    networks:
+      - postgres
+
   php:
     restart: "no"
     networks:

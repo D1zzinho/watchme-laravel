@@ -46,6 +46,20 @@ Route::group(
                     );
 
                     Route::apiResource('videos', VideoController::class);
+
+                    Route::group(
+                        [
+                            'prefix'     => 'videos'
+                        ],
+                        function () {
+                            Route::controller(VideoController::class)->group(
+                                function () {
+                                    Route::get('latest/{limit}', 'latest')->name('videos.latest');
+                                    Route::get('search/{search}/{limit?}', 'search')->name('videos.search');
+                                }
+                            );
+                        }
+                    );
                 });
 
                 Route::group(
@@ -56,9 +70,9 @@ Route::group(
                     function () {
                         Route::controller(VideoController::class)->group(
                             function () {
-                                Route::get('stream/{quality}', 'stream');
-                                Route::get('thumbnail', 'thumbnail');
-                                Route::get('preview', 'preview');
+                                Route::get('stream/{quality}', 'stream')->name('videos.stream');
+                                Route::get('thumbnail', 'thumbnail')->name('videos.thumbnail');
+                                Route::get('preview', 'preview')->name('videos.preview');
                             }
                         );
                     }

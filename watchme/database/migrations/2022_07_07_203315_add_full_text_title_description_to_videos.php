@@ -13,11 +13,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tags', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 60)->unique();
-            $table->string('slug', 80)->unique();
-            $table->timestamps();
+        Schema::table('videos', function (Blueprint $table) {
+            $table->fullText('title');
+            $table->fullText('description');
         });
     }
 
@@ -28,6 +26,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tags');
+        Schema::table('videos', function (Blueprint $table) {
+            $table->dropFullText('title');
+            $table->dropFullText('description');
+        });
     }
 };

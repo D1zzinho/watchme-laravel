@@ -42,6 +42,20 @@ return [
             'visibility' => 'private',
         ],
 
+        'downloadable_videos' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/downloadable'),
+            'url' => env('APP_URL') . '/storage',
+            'visibility' => 'public',
+        ],
+
+        'streamable_videos' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/streamable'),
+            'url' => env('APP_URL') . '/storage',
+            'visibility' => 'public',
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
