@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use JetBrains\PhpStorm\ArrayShape;
 use Laravel\Scout\Attributes\SearchUsingFullText;
-use Laravel\Scout\Attributes\SearchUsingPrefix;
 use Laravel\Scout\Searchable;
 
 /**
@@ -29,19 +27,18 @@ class Video extends Model
         'hash_id',
         'title',
         'description',
-        'thumbnail',
+        'poster',
+        'thumbnails',
         'preview',
         'views',
         'width',
         'height',
         'duration',
-        'converted_for_downloading_at',
-        'converted_for_streaming_at',
+        'converted_at',
     ];
 
     protected $dates = [
-        'converted_for_downloading_at',
-        'converted_for_streaming_at',
+        'converted_at'
     ];
 
     public function getRouteKeyName(): string
@@ -56,9 +53,8 @@ class Video extends Model
      */
     public function searchable(): bool
     {
-        return $this->status->title === 'public'
-            && !is_null($this->converted_for_downloading_at)
-            && !is_null($this->converted_for_streaming_at);
+        return $this->status?->title === 'public'
+            && !is_null($this->converted_at);
     }
 
     /**

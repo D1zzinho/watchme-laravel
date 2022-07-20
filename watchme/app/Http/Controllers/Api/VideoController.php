@@ -109,10 +109,7 @@ class VideoController extends BaseController
      */
     public function update(UpdateVideoRequest $request, Video $video): JsonResponse
     {
-        $validated = $request->validated();
-
-        $video->update($validated);
-        $video->refresh();
+        $video = $this->repository->update($request, $video);
 
         return $this->sendResponse(new VideoResource($video), 'Video successfully updated.');
     }
@@ -157,7 +154,7 @@ class VideoController extends BaseController
         $video->load('sources');
         $source = $video->sources?->first(fn($source) => $source->type === $quality);
 
-        if ($source && Storage::exists($source->pivot->source_path)) {
+        if ($source && Storage::disk('media_storage')->exists($source->pivot->source_path)) {
             $stream = new VideoStream($source->pivot->source_path);
             return response()->stream(
                 function () use ($stream) {
@@ -177,13 +174,9 @@ class VideoController extends BaseController
      * @return JsonResponse|\Illuminate\Http\Response
      * @throws BindingResolutionException
      */
-    public function thumbnail(Video $video)
+    public function thumbnail(Video $video): \Illuminate\Http\Response|JsonResponse
     {
-        $thumbnail = $video->thumbnail;
-
-        if (!$video->exists || !Storage::exists($thumbnail)) {
-            return $this->sendError('Video does not exists');
-        }
+        $thumbnail = $video->poster;
 
         return $this->readMaterial($thumbnail);
     }
@@ -194,13 +187,9 @@ class VideoController extends BaseController
      * @return JsonResponse|\Illuminate\Http\Response
      * @throws BindingResolutionException
      */
-    public function preview(Video $video)
+    public function preview(Video $video): \Illuminate\Http\Response|JsonResponse
     {
         $preview = $video->preview;
-
-        if (!$video->exists || !Storage::exists($preview)) {
-            return $this->sendError('Video does not exists');
-        }
 
         return $this->readMaterial($preview);
     }
@@ -208,13 +197,17 @@ class VideoController extends BaseController
     /**
      * @param  string $filepath
      *
-     * @return \Illuminate\Http\Response
+     * @return JsonResponse|Response
      * @throws BindingResolutionException
      */
-    private function readMaterial(string $filepath): \Illuminate\Http\Response
+    private function readMaterial(string $filepath): JsonResponse|Response
     {
-        $file = Storage::get($filepath);
-        $type = Storage::mimeType($filepath);
+        if (!Storage::disk('media_storage')->exists($filepath)) {
+            return $this->sendError('File does not exists');
+        }
+
+        $file = Storage::disk('media_storage')->get($filepath);
+        $type = Storage::disk('media_storage')->mimeType($filepath);
 
         return response()->make($file, 200)->header('Content-Type', $type);
     }

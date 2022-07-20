@@ -35,7 +35,8 @@ class UpdateVideoRequest extends FormRequest
             ],
             'title'           => 'nullable|string|max:255',
             'description'     => 'nullable|string|max:2500',
-            'views'           => 'nullable|integer'
+            'views'           => 'nullable|integer',
+            'tags'            => 'nullable|array'
         ];
     }
 }

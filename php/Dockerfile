@@ -1,4 +1,4 @@
-FROM php:8.1.6-fpm
+FROM php:8.1.8-fpm
 
 WORKDIR /home/watchme
 
@@ -30,3 +30,5 @@ RUN cd / \
 RUN pecl install xdebug
 
 RUN useradd -p $(openssl passwd -1 docker) docker
+
+RUN usermod -a -G www-data docker

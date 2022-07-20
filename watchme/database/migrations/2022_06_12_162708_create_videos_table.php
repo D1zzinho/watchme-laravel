@@ -25,17 +25,16 @@ return new class extends Migration
                 ->default(1)
                 ->constrained('video_statuses')
                 ->onUpdate('cascade');
-            $table->string('hash_id', 20)->unique();
+            $table->string('hash_id', 15)->unique();
             $table->string('title', 100);
             $table->string('description', 500);
-            $table->string('thumbnail', 255);
-            $table->string('preview', 255);
+            $table->string('thumbnail', 255)->nullable();
+            $table->string('preview', 255)->nullable();
             $table->unsignedInteger('views')->default(0);
             $table->unsignedSmallInteger('width')->nullable();
-            $table->unsignedSmallInteger('height');
+            $table->unsignedSmallInteger('height')->nullable();
             $table->unsignedMediumInteger('duration')->nullable();
-            $table->datetime('converted_for_downloading_at')->nullable();
-            $table->datetime('converted_for_streaming_at')->nullable();
+            $table->datetime('converted_at')->nullable();
             $table->timestamps();
         });
     }

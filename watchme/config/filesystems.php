@@ -38,21 +38,14 @@ return [
         'media_storage' => [
             'driver' => 'local',
             'root' => storage_path('app/uploads'),
-            'url' => env('APP_URL') . '/storage',
-            'visibility' => 'private',
+            'url' => env('APP_URL') . '/storage/uploads',
+            'visibility' => 'public'
         ],
 
-        'downloadable_videos' => [
+        'thumbnails_storage' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/downloadable'),
-            'url' => env('APP_URL') . '/storage',
-            'visibility' => 'public',
-        ],
-
-        'streamable_videos' => [
-            'driver' => 'local',
-            'root' => storage_path('app/public/streamable'),
-            'url' => env('APP_URL') . '/storage',
+            'root' => storage_path('app/public/videos/thumbnails'),
+            'url' => env('APP_URL').'/storage/videos/thumbnails',
             'visibility' => 'public',
         ],
 
@@ -61,6 +54,11 @@ return [
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
+        ],
+
+        'secrets' => [
+            'driver' => 'local',
+            'root' => storage_path('secrets')
         ],
 
         's3' => [
