@@ -15,22 +15,69 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group([
-    'prefix' => 'v1'
-], function () {
-    Route::controller(AuthController::class)->group(function () {
-        Route::post('register', 'register');
-        Route::post('login', 'login');
-    });
+Route::group(
+    [
+        'prefix' => 'v1'
+    ],
+    function () {
+        Route::group(
+            [
+                'prefix'     => 'auth',
+                'middleware' => ['throttle:api']
+            ],
+            function () {
+                Route::controller(AuthController::class)
+                    ->group(
+                        function () {
+                            Route::post('register', 'register');
+                            Route::post('login', 'login');
+                        }
+                    );
+            }
+        );
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::controller(AuthController::class)->group(function () {
-            Route::post('logout', 'logout');
-        });
+        Route::middleware('auth:sanctum')->group(
+            function () {
+                Route::middleware(['throttle:api'])->group(function () {
+                    Route::controller(AuthController::class)->group(
+                        function () {
+                            Route::post('auth/logout', 'logout');
+                        }
+                    );
 
-        Route::apiResource('videos', VideoController::class);
-        Route::controller(VideoController::class)->group(function () {
-            Route::get('videos/stream/{hashId}/{quality}', 'stream');
-        });
-    });
-});
+                    Route::apiResource('videos', VideoController::class);
+
+                    Route::group(
+                        [
+                            'prefix'     => 'videos'
+                        ],
+                        function () {
+                            Route::controller(VideoController::class)->group(
+                                function () {
+                                    Route::get('latest/{limit}', 'latest')->name('videos.latest');
+                                    Route::get('search/{search}/{limit?}', 'search')->name('videos.search');
+                                }
+                            );
+                        }
+                    );
+                });
+
+                Route::group(
+                    [
+                        'prefix'     => 'videos/{video}',
+                        'middleware' => ['throttle:video']
+                    ],
+                    function () {
+                        Route::controller(VideoController::class)->group(
+                            function () {
+                                Route::get('stream/{quality}', 'stream')->name('videos.stream');
+                                Route::get('thumbnail', 'thumbnail')->name('videos.thumbnail');
+                                Route::get('preview', 'preview')->name('videos.preview');
+                            }
+                        );
+                    }
+                );
+            }
+        );
+    }
+);

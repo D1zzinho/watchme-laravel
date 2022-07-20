@@ -4,7 +4,6 @@ namespace Tests;
 
 use App\Models\User;
 use App\Models\Video;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Auth;
 

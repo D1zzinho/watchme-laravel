@@ -38,8 +38,15 @@ return [
         'media_storage' => [
             'driver' => 'local',
             'root' => storage_path('app/uploads'),
-            'url' => env('APP_URL') . '/storage',
-            'visibility' => 'private',
+            'url' => env('APP_URL') . '/storage/uploads',
+            'visibility' => 'public'
+        ],
+
+        'thumbnails_storage' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/videos/thumbnails'),
+            'url' => env('APP_URL').'/storage/videos/thumbnails',
+            'visibility' => 'public',
         ],
 
         'public' => [
@@ -47,6 +54,11 @@ return [
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
+        ],
+
+        'secrets' => [
+            'driver' => 'local',
+            'root' => storage_path('secrets')
         ],
 
         's3' => [

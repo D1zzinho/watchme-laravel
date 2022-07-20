@@ -24,14 +24,10 @@ class StoreVideoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'hash_id'     => 'required|unique:videos,hash_id|string|max:15',
             'title'       => 'required|string|max:255',
             'description' => 'required|string|max:2500',
-            'thumbnail'   => 'required|string|max:255',
-            'preview'     => 'required|string|max:255',
-            'width'       => 'nullable|integer',
-            'height'      => 'required|integer',
-            'duration'    => 'nullable|integer'
+            'tags'        => 'nullable|array',
+            'file'        => 'required|file|mimetypes:video/avi,video/mpeg,video/quicktime,video/mp4,video/ogg,video/webm,video/x-flv'
         ];
     }
 }

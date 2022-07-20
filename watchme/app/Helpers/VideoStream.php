@@ -19,7 +19,7 @@ class VideoStream
     public function __construct($filePath = '')
     {
         $this->path = $filePath;
-        $this->mime = Storage::mimeType($filePath);
+        $this->mime = Storage::disk('media_storage')->mimeType($filePath);
     }
 
     /**
@@ -27,7 +27,7 @@ class VideoStream
      */
     private function open(): void
     {
-        if (!($stream = Storage::readStream($this->path))) {
+        if (!($stream = Storage::disk('media_storage')->readStream($this->path))) {
             die('Could not open stream for reading');
         }
 
@@ -40,7 +40,7 @@ class VideoStream
     private function setHeader(): void
     {
         ob_get_clean();
-        $this->size = Storage::size($this->path);
+        $this->size = Storage::disk('media_storage')->size($this->path);
 
         header("Content-Type: {$this->mime}");
         header("Accept-Ranges: bytes");

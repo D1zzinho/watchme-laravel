@@ -3,15 +3,16 @@
 namespace Tests\Feature;
 
 use App\Models\Video;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class VideoTest extends TestCase
 {
     use DatabaseTransactions;
 
-    private Model $video;
+    private Video $video;
 
     public function setUp(): void
     {
@@ -20,11 +21,6 @@ class VideoTest extends TestCase
         $this->video = $this->createVideoForAuthenticatedUser();
     }
 
-    /**
-     * @test
-     *
-     * @return void
-     */
     public function test_get_all_videos(): void
     {
         $response = $this->getJson(route('videos.index'));
@@ -38,11 +34,6 @@ class VideoTest extends TestCase
             );
     }
 
-    /**
-     * @test
-     *
-     * @return void
-     */
     public function test_get_single_video(): void
     {
         $this->getJson(route('videos.show', $this->video->hash_id))
@@ -51,28 +42,30 @@ class VideoTest extends TestCase
             ->assertJsonPath('data.title', $this->video->title);
     }
 
-    /**
-     * @test
-     *
-     * @return void
-     */
     public function test_store_new_video(): void
     {
-        $video = Video::factory()->make();
+        Storage::persistentFake('media_storage');
 
-        $response = $this->postJson(route('videos.store'), $video->toArray())
+        $video = Video::factory()->make();
+        $file = UploadedFile::fake()->create('video1.mp4', 2048, 'video/mp4');
+
+        $response = $this->postJson(
+            route('videos.store'),
+            array_merge(
+                $video->toArray(),
+                ['file' => $file]
+            )
+        )
             ->assertCreated()
             ->json('data');
 
         $this->assertEquals($video->title, $response['title']);
         $this->assertDatabaseHas('videos', ['hash_id' => $video->hash_id, 'title' => $video->title]);
+
+        Storage::disk('media_storage')->assertExists("tmp/{$file->hashName()}");
+        $this->assertFileEquals($file, Storage::disk('media_storage')->path("tmp/{$file->hashName()}"));
     }
 
-    /**
-     * @test
-     *
-     * @return void
-     */
     public function test_while_storing_video_required_fields_are_present(): void
     {
         $this->withExceptionHandling();
@@ -82,11 +75,6 @@ class VideoTest extends TestCase
             ->assertJsonValidationErrors(['hash_id', 'title', 'description', 'thumbnail', 'preview', 'height']);
     }
 
-    /**
-     * @test
-     *
-     * @return void
-     */
     public function test_delete_video(): void
     {
         $this->deleteJson(route('videos.destroy', $this->video->hash_id))
@@ -101,11 +89,6 @@ class VideoTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     *
-     * @return void
-     */
     public function test_update_video(): void
     {
         $updateFormImitation = [

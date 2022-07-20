@@ -13,20 +13,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tag_video', function (Blueprint $table) {
-            $table
-                ->foreignId('video_id')
-                ->constrained('videos')
-                ->onUpdate('cascade')
-                ->onDelete('cascade');
-            $table
-                ->foreignId('tag_id')
+        Schema::create('taggables', function (Blueprint $table) {
+            $table->foreignId('tag_id')
                 ->constrained('tags')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
+
+            $table->morphs('taggable');
             $table->timestamps();
 
-            $table->primary(['video_id', 'tag_id']);
+            $table->unique(['tag_id', 'taggable_id', 'taggable_type']);
         });
     }
 
@@ -37,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tags_videos');
+        Schema::dropIfExists('taggables');
     }
 };
