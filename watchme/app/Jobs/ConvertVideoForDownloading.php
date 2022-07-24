@@ -15,7 +15,10 @@ use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class ConvertVideoForDownloading implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public Video $video;
 
@@ -37,7 +40,7 @@ class ConvertVideoForDownloading implements ShouldQueue
     public function handle(): void
     {
         // create a video format...
-        $lowBitrateFormat = (new X264)->setKiloBitrate(500);
+        $lowBitrateFormat = (new X264())->setKiloBitrate(500);
 
         // open the uploaded video from the right disk...
         FFMpeg::fromDisk('media_storage')

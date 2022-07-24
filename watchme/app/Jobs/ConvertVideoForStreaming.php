@@ -3,9 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\Video;
-use FFMpeg\Coordinate\TimeCode;
-use FFMpeg\Filters\Video\VideoFilters;
-use FFMpeg\Format\Video\WebM;
 use FFMpeg\Format\Video\X264;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,15 +10,15 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
-use ProtoneMedia\LaravelFFMpeg\FFMpeg\AdvancedMedia;
-use ProtoneMedia\LaravelFFMpeg\Filesystem\Media;
 use ProtoneMedia\LaravelFFMpeg\Filters\TileFactory;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class ConvertVideoForStreaming implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
     public Video $video;
 
@@ -91,7 +88,6 @@ class ConvertVideoForStreaming implements ShouldQueue
             ->toDisk('thumbnails_storage')
             ->save("{$this->video->hash_id}_tile_%05d.jpg");
 
-        // update the database so we know the convertion is done!
         $this->video->update(
             [
                 'thumbnails'   => "storage/videos/thumbnails/{$this->video->hash_id}_thumbnails.vtt",

@@ -4,7 +4,6 @@ namespace App\Repositories\Eloquent;
 
 use App\Http\Requests\StoreVideoRequest;
 use App\Http\Requests\UpdateVideoRequest;
-use App\Jobs\ConvertVideoForDownloading;
 use App\Jobs\ConvertVideoForStreaming;
 use App\Models\Tag;
 use App\Models\Video;
@@ -67,7 +66,6 @@ class VideoRepository implements VideoRepositoryInterface
 
         $video->sources()->attach(1, ['source_path' => $path]);
 
-       // ConvertVideoForDownloading::dispatch($video);
         ConvertVideoForStreaming::dispatch($video);
 
         DB::commit();

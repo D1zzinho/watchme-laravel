@@ -152,7 +152,7 @@ class VideoController extends BaseController
     public function stream(Video $video, int $quality): StreamedResponse|JsonResponse
     {
         $video->load('sources');
-        $source = $video->sources?->first(fn($source) => $source->type === $quality);
+        $source = $video->sources?->first(fn ($source) => $source->type === $quality);
 
         if ($source && Storage::disk('media_storage')->exists($source->pivot->source_path)) {
             $stream = new VideoStream($source->pivot->source_path);

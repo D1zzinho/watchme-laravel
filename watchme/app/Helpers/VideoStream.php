@@ -108,7 +108,7 @@ class VideoStream
     /**
      * Start streaming.
      */
-    #[NoReturn] function start(): void
+    #[NoReturn] public function start(): void
     {
         $this->open();
         $this->setHeader();
